@@ -18,7 +18,7 @@ let
 in
 stdenv.mkDerivation {
   pname = "vast";
-  version = pkgs.lib.head (pkgs.lib.splitString "\n" (builtins.readFile ./VERSION));
+  version = stdenv.lib.fileContents ./VERSION;
 
   src = pkgs.nix-gitignore.gitignoreSource [] ./.;
 
