@@ -255,7 +255,7 @@ std::pair<table_slice_ptr, table_slice_ptr> split(const table_slice_ptr& slice,
   // Create second table slice.
   select(xs, slice, make_ids({{mid, last}}));
   VAST_ASSERT(xs.size() == 2);
-  return {std::move(xs.front()), std::move(xs.back())};
+  return {xs.front(), xs.back()};
 }
 
 bool operator==(const table_slice& x, const table_slice& y) {
