@@ -10,6 +10,12 @@ Every entry has a category for which we use the following visual abbreviations:
 
 ## [Unreleased]
 
+- 🎁 When a record field of type `string` has the `#index=hash` attribute,
+  VAST will choose an optimized implementation. This new index type only
+  supports (in)equality queries and is therefore intended to be used with
+  opaque types, such as unique identifiers.
+  [#632](https://github.com/tenzir/vast/pull/632)
+
 - 🐞 Importing events over UDP with `vast import <format> --listen :<port>/udp`
   failed to register the accountant component. This caused an unexpected
   message warning to be printed on startup and resulted in losing import
