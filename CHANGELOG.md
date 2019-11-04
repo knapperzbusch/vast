@@ -10,6 +10,11 @@ Every entry has a category for which we use the following visual abbreviations:
 
 ## [Unreleased]
 
+- 🎁 Added *Apache Arrow* as new export format. This allows users to export
+  query results as Apache Arrow record batches for processing the results
+  downstream, e.g., in Python or Spark.
+  [#633](https://github.com/tenzir/vast/pull/633)
+
 - 🎁 The `import pcap` command now takes an optional snapshot length via
   `--snaplen`.  If the snapshot length is set to snaplen, and snaplen is less
   than the size of a packet that is captured, only the first snaplen bytes of
@@ -18,7 +23,8 @@ Every entry has a category for which we use the following visual abbreviations:
 
 - 🔄 The `import pcap` command no longer takes interface names via `--read,-r`,
   but instead from a separate option named `--interface,-i`. This change has
-  been made for consistency with other tools. (#641)
+  been made for consistency with other tools.
+  [#641](https://github.com/tenzir/vast/pull/641)
 
 ## [0.2] - 2019-10-30
 
