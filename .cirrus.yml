@@ -105,7 +105,7 @@ macos_task:
     PATH: /usr/local/opt/python/libexec/bin:$PATH
     DESTDIR: "$PWD"
   setup_script:
-    - HOMEBREW_NO_AUTO_UPDATE=1 brew install openssl cmake git ninja python libpcap jq tcpdump rsync
+    - HOMEBREW_NO_AUTO_UPDATE=1 brew install openssl cmake git ninja python libpcap jq tcpdump rsync apache-arrow
   <<: *build_definition
 
 release_task:
