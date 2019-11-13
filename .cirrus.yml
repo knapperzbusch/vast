@@ -74,7 +74,7 @@ debian_task:
     matrix:
       - BUILD_TYPE: Release
       - BUILD_TYPE: Debug
-        CONFIGURE_FLAGS: -DENABLE_ADDRESS_SANITIZER:BOOL=ON
+        CONFIGURE_FLAGS: -DENABLE_ADDRESS_SANITIZER:BOOL=ON -DVAST_NO_ARROW:BOOL=ON
   <<: *build_definition
 
 freebsd_task:
@@ -89,7 +89,7 @@ freebsd_task:
     matrix:
       - BUILD_TYPE: Release
       - BUILD_TYPE: Debug
-        CONFIGURE_FLAGS: -DENABLE_ADDRESS_SANITIZER:BOOL=ON
+        CONFIGURE_FLAGS: -DENABLE_ADDRESS_SANITIZER:BOOL=ON -DVAST_NO_ARROW:BOOL=ON
   setup_script:
     - env ASSUME_ALWAYS_YES=YES pkg install git cmake ninja lang/python3 lang/python py36-pip base64 jq tcpdump rsync
   <<: *build_definition
