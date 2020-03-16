@@ -11,36 +11,29 @@
  * contained in the LICENSE file.                                             *
  ******************************************************************************/
 
-#include "vast/const_table_slice_handle.hpp"
+#include "vast/system/spawn_type_registry.hpp"
 
-#include <caf/detail/scope_guard.hpp>
-#include <caf/error.hpp>
+#include "vast/defaults.hpp"
+#include "vast/detail/unbox_var.hpp"
+#include "vast/logger.hpp"
+#include "vast/system/node.hpp"
+#include "vast/system/spawn_arguments.hpp"
+#include "vast/system/type_registry.hpp"
 
-#include "vast/table_slice.hpp"
-#include "vast/table_slice_handle.hpp"
+#include <caf/actor.hpp>
+#include <caf/expected.hpp>
+#include <caf/settings.hpp>
 
-namespace vast {
+namespace vast::system {
 
-const_table_slice_handle::const_table_slice_handle(
-  const table_slice_handle& other)
-  : super(other.ptr()) {
-  // nop
+maybe_actor spawn_type_registry(node_actor* self, spawn_arguments& args) {
+  if (!args.empty())
+    return unexpected_arguments(args);
+  auto opt = [&](caf::string_view key, auto default_value) {
+    return get_or(args.invocation.options, key, default_value);
+  };
+  self->state.type_registry = self->spawn(type_registry, args.dir / args.label);
+  return caf::actor_cast<caf::actor>(self->state.type_registry);
 }
 
-const_table_slice_handle::~const_table_slice_handle() {
-  // nop
-}
-
-caf::error inspect(caf::serializer& sink, const_table_slice_handle& hdl) {
-  return table_slice::serialize_ptr(sink, hdl.get());
-}
-
-caf::error inspect(caf::deserializer& source, const_table_slice_handle& hdl) {
-  table_slice_ptr ptr;
-  auto guard = caf::detail::make_scope_guard([&] {
-    hdl = const_table_slice_handle{std::move(ptr)};
-  });
-  return table_slice::deserialize_ptr(source, ptr);
-}
-
-} // namespace vast
+} // namespace vast::system

@@ -26,10 +26,8 @@ fixtures:
                     config_file=f'{self.config_file}')
       cmd += ['-e', f':{VAST_PORT}']
 
-
     exit: | # python
       node.stop()
-
 
 tests:
   JSON schema inference:
@@ -61,7 +59,7 @@ tests:
       - command: -N export ascii 'orig_bytes > 1k && orig_bytes < 1Ki'
       - command: -N export ascii ':string == "OrfTtuI5G4e" || :port == 67/udp'
       - command: -N export ascii '#type == "zeek.conn" && resp_h == 192.168.1.104'
-      - command: -N export ascii '#type != "zeek.conn" && \#type != "vast.account"'
+      - command: '-N export ascii "#type != \"zeek.conn\" && #type != \"vast.statistics\""'
       - command: -N export ascii '#type != "foobar" && resp_h == 192.168.1.104'
   Node Zeek multiple imports:
     tags: [node, import-export, zeek]
@@ -133,7 +131,7 @@ tests:
       - command: import -b zeek
         input: data/zeek/conn.log.gz
       - command: status
-        transformation: jq '.node.index.statistics.layouts | del(."vast.account".count)'
+        transformation: jq '.node.index.statistics.layouts | del(."vast.statistics".count)'
   Server Basic bgpdump:
     tags: [server, import-export, bgpdump, disabled]
     fixture: ServerTester
@@ -276,3 +274,15 @@ tests:
         input: data/zeek/conn.log.gz
       - command: -N export -n 10 arrow '#type == "zeek.conn"'
         transformation: python @./misc/scripts/print-arrow.py
+  Type Registry:
+    tags: [import]
+    steps:
+      - command: -N import -n 1 test
+      - command: -N status
+        transformation: jq '.node."type-registry".statistics'
+  Import syslog:
+    tags: [syslog, import]
+    steps:
+      - command: -N import syslog
+        input: data/syslog/syslog.log
+      - command: -N export ascii '#type == /syslog.*/'

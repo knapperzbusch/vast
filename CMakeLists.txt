@@ -155,9 +155,9 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/libvast/vast/documentation.hpp
 
 # Choose a deafult log level based on build type.
 if (CMAKE_BUILD_TYPE STREQUAL Release)
-  set(VAST_LOG_LEVEL_DEFAULT "INFO")
+  set(VAST_LOG_LEVEL_DEFAULT "VERBOSE")
 elseif (CMAKE_BUILD_TYPE STREQUAL MinSizeRel)
-  set(VAST_LOG_LEVEL_DEFAULT "INFO")
+  set(VAST_LOG_LEVEL_DEFAULT "VERBOSE")
 elseif (CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
   set(VAST_LOG_LEVEL_DEFAULT "DEBUG")
 else ()
@@ -179,7 +179,7 @@ elseif (NOT VAST_LOG_LEVEL STREQUAL "$CACHE{VAST_LOG_LEVEL}")
 endif ()
 
 # Raise an error for invalid log levels.
-set(validLogLevels QUIET ERROR WARNING INFO DEBUG TRACE)
+set(validLogLevels QUIET ERROR WARNING INFO VERBOSE DEBUG TRACE)
 list(FIND validLogLevels "${VAST_LOG_LEVEL}" logLevelIndex)
 if (logLevelIndex LESS 0)
   message(FATAL_ERROR "Invalid log level: \"${VAST_LOG_LEVEL}\"")
@@ -660,7 +660,7 @@ if (NOT VAST_NO_ARROW)
     foreach (dep ${dependencies_config})
       find_package("${dep}" REQUIRED QUIET CONFIG)
       string(APPEND VAST_FIND_DEPENDENCY_LIST
-            "\nfind_package(${dep} REQUIRED QUIET CONFIG)")
+             "\nfind_package(${dep} REQUIRED QUIET CONFIG)")
     endforeach ()
   endif ()
   find_package(Arrow REQUIRED QUIET CONFIG)
@@ -673,6 +673,13 @@ if (NOT VAST_NO_ARROW)
     set(ARROW_LIBRARIES arrow_static)
   endif ()
 endif ()
+
+# Add robin_map
+add_subdirectory(aux/robin-map)
+export(
+  EXPORT tsl-robin-mapTargets
+  FILE tsl-robin-mapTargets.cmake
+  NAMESPACE tsl::)
 
 find_package(Doxygen QUIET)
 find_package(Pandoc QUIET)
@@ -713,6 +720,10 @@ file(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/integration_$<CONFIG>.sh"
   CONTENT
     "#!/bin/sh
+     if ! command -v jq >/dev/null 2>&1; then
+       >&2 echo 'failed to find jq in $PATH'
+       exit 1
+     fi
      base_dir=\"${CMAKE_CURRENT_SOURCE_DIR}/integration\"
      env_dir=\"${CMAKE_CURRENT_BINARY_DIR}/integration_env\"
      app=\"${EXECUTABLE_OUTPUT_PATH}/vast\"

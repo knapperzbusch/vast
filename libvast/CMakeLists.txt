@@ -66,6 +66,7 @@ set(libvast_sources
     src/format/ostream_writer.cpp
     src/format/reader.cpp
     src/format/single_layout_reader.cpp
+    src/format/syslog.cpp
     src/format/test.cpp
     src/format/writer.cpp
     src/format/zeek.cpp
@@ -73,6 +74,7 @@ set(libvast_sources
     src/icmp.cpp
     src/ids.cpp
     src/json.cpp
+    src/logger.cpp
     src/meta_index.cpp
     src/null_bitmap.cpp
     src/operator.cpp
@@ -130,10 +132,12 @@ set(libvast_sources
     src/system/spawn_profiler.cpp
     src/system/spawn_sink.cpp
     src/system/spawn_source.cpp
+    src/system/spawn_type_registry.cpp
     src/system/start_command.cpp
     src/system/table_indexer.cpp
     src/system/task.cpp
     src/system/tracker.cpp
+    src/system/type_registry.cpp
     src/system/version_command.cpp
     src/table_slice.cpp
     src/table_slice_builder.cpp
@@ -175,7 +179,11 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_include_directories(libvast PRIVATE "${PROJECT_SOURCE_DIR}/aux")
+
 add_dependencies(libvast vast-schema)
+
+target_link_libraries(libvast PUBLIC tsl::robin_map)
+
 target_link_libraries(libvast PUBLIC caf::core caf::io)
 if (VAST_USE_OPENSSL)
   target_link_libraries(libvast PUBLIC caf::openssl)
@@ -276,6 +284,7 @@ set(tests
     test/format/csv.cpp
     test/format/json.cpp
     test/format/mrt.cpp
+    test/format/syslog.cpp
     test/format/writer.cpp
     test/format/zeek.cpp
     test/hash.cpp
@@ -325,6 +334,7 @@ set(tests
     test/system/source.cpp
     test/system/table_indexer.cpp
     test/system/task.cpp
+    test/system/type_registry.cpp
     test/table_slice.cpp
     test/time.cpp
     test/type.cpp

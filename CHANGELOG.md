@@ -10,6 +10,41 @@ Every entry has a category for which we use the following visual abbreviations:
 
 ## [Unreleased]
 
+- 🎁 The new `vast import syslog` command allows importing Syslog messages
+  as defined in [RFC5424](https://tools.ietf.org/html/rfc5424).
+  [#770](https://github.com/knapperzbusch/vast/pull/770)
+
+- 🎁 The hash index has been re-enabled after it was outfitted with a new
+  [high-performance hash map](https://github.com/Tessil/robin-map/) implementation
+  that increased performance to the point where it is on par with the regular
+  index.
+
+- 🔄 The VERBOSE log level has been added between INFO and DEBUG. This level
+  is enabled at build time for all build types, making it possible to get more
+  detailed logging output from release builds.
+  [#787](https://github.com/tenzir/pull/787)
+
+- 🔄 The command line options prefix for changing CAF options was changed from
+  `--caf#` to `--caf.`. [#797](https://github.com/tenzir/pull/797)
+
+- 🐞 Expressions must now be parsed to the end of input. This fixes a bug that
+  caused malformed queries to be evaluated until the parser failed. For example,
+  the query `#type == "suricata.http" && .dest_port == 80` was erroneously
+  evaluated as `#type == "suricata.http"` instead.
+  [#791](https://github.com/tenzir/pull/791)
+
+- 🔄 The internal statistics event type `vast.account` has been renamed to
+  `vast.statistics` for clarity. [#789](https://github.com/tenzir/pull/789)
+
+- 🐞 The short option `-c` for setting the configuration file has been removed.
+  The long option `--config` must now be used instead. This fixed a bug that did
+  not allow for `-c` to be used for continuous exports.
+  [#781](https://github.com/tenzir/pull/781)
+
+- 🐞 Continuous export processes can now be stopped correctly. Before this
+  change, the node showed an error message and the exporting process exited with
+  a non-zero exit code. [#779](https://github.com/tenzir/pull/779)
+
 - 🎁 The option `--disable-community-id` has been added to the `vast import
   pcap` command for disabling the automatic computation of Community IDs.
   [#777](https://github.com/tenzir/pull/777)

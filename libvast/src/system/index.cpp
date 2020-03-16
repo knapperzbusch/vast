@@ -86,7 +86,7 @@ index_state::index_state(caf::stateful_actor<index_state>* self)
 }
 
 index_state::~index_state() {
-  VAST_TRACE("");
+  VAST_VERBOSE(self, "tearing down");
   flush_to_disk();
 }
 
@@ -123,6 +123,7 @@ caf::error index_state::load_from_disk() {
     return caf::none;
   }
   if (auto fname = statistics_filename(); exists(fname)) {
+    VAST_VERBOSE(self, "loading statistics from", fname);
     if (auto err = load(&self->system(), fname, stats)) {
       VAST_ERROR(self,
                  "failed to load statistics:", self->system().render(err));
@@ -131,6 +132,7 @@ caf::error index_state::load_from_disk() {
     VAST_DEBUG(self, "loaded statistics");
   }
   if (auto fname = meta_index_filename(); exists(fname)) {
+    VAST_VERBOSE(self, "loading meta index from", fname);
     if (auto err = load(&self->system(), fname, meta_idx)) {
       VAST_ERROR(self, "failed to load meta index:",
                  self->system().render(err));
@@ -141,16 +143,25 @@ caf::error index_state::load_from_disk() {
   return caf::none;
 }
 
+caf::error index_state::flush_meta_index() {
+  VAST_VERBOSE(self, "writing meta index to", meta_index_filename());
+  return save(&self->system(), meta_index_filename(), meta_idx);
+}
+
+caf::error index_state::flush_statistics() {
+  VAST_VERBOSE(self, "writing statistics to", statistics_filename());
+  return save(&self->system(), statistics_filename(), stats);
+}
+
 caf::error index_state::flush_to_disk() {
   VAST_TRACE("");
   auto flush_all = [this]() -> caf::error {
-    // Flush statistics to disk.
-    if (auto err = save(&self->system(), statistics_filename(), stats))
-      return err;
     // Flush meta index to disk.
-    if (auto err = save(&self->system(), meta_index_filename(), meta_idx))
+    if (auto err = flush_meta_index())
       return err;
-    VAST_DEBUG(self, "saved meta index");
+    // Flush statistics to disk.
+    if (auto err = flush_statistics())
+      return err;
     // Flush active partition.
     if (active != nullptr)
       if (auto err = active->flush_to_disk())
@@ -261,13 +272,18 @@ void index_state::reset_active_partition() {
   // partition gets replaced becomes full.
   if (active != nullptr) {
     if (auto err = active->flush_to_disk())
-      VAST_ERROR(self, "unable to persist active partition");
+      VAST_ERROR(self, "failed to persist active partition");
     // Store this partition as unpersisted to make sure we're not attempting
     // to load it from disk until it is safe to do so.
     if (active_partition_indexers > 0)
       unpersisted.emplace_back(std::move(active), active_partition_indexers);
   }
-  // Create a new active partition.
+  // Persist the current version of the meta_index and statistics to preserve
+  // the state and be partially robust against crashes.
+  if (auto err = flush_meta_index())
+    VAST_ERROR(self, "failed to persist the meta index");
+  if (auto err = flush_statistics())
+    VAST_ERROR(self, "failed to persist the statistics");
   active = make_partition();
   active_partition_indexers = 0;
 }
